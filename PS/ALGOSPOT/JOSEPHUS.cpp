@@ -1,28 +1,25 @@
 #include <iostream>
-#include <list>
+#include <vector>
 
 using namespace std;
 
 void josephus (int n, int k) {
     int i;
-    list<int> survivors;
-    list<int>::iterator kill;
+    vector<int> survivors;
+    vector<int>::iterator kill;
+    survivors.reserve(n);
     for (i = 1; i <= n; ++i) survivors.push_back(i);
     kill = survivors.begin();
     while (n > 2) {
         #ifdef PPRINT
-        for (list<int>::iterator it = survivors.begin(); it != survivors.end(); it++) {
+        for (vector<int>::iterator it = survivors.begin(); it != survivors.end(); it++) {
             cout << *it << " ";
         }
         cout << "\n";
         #endif
         kill = survivors.erase(kill);
-        if (kill == survivors.end()) kill = survivors.begin();
         --n;
-        for (i = 0; i < k-1; i++) {
-            ++kill;
-            if (kill == survivors.end()) kill = survivors.begin();            
-        }
+        kill = survivors.begin() + (((kill - survivors.begin()) + k-1) % survivors.size());
     }
     cout << survivors.front() << " " << survivors.back() << "\n";
 }
