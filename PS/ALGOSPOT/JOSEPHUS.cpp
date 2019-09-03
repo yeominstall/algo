@@ -1,41 +1,39 @@
 #include <iostream>
-#include <cstring>
+#include <list>
 
 using namespace std;
 
-int N, K, remains;
-int r[1000];
-
-void josephus (void) {
-    int p = 0, roul = 2;
-    remains = N;
-    while (remains != 2) {
-        if (r[p] == 0 && ++roul == 3) {
-            #ifdef PPRINT
-            cout << "hit the " << p << "\n";
-            #endif
-            r[p] = 1;
-            remains--;
+void josephus (int n, int k) {
+    int i;
+    list<int> survivors;
+    list<int>::iterator kill;
+    for (i = 1; i <= n; ++i) survivors.push_back(i);
+    kill = survivors.begin();
+    while (n > 2) {
+        #ifdef PPRINT
+        for (list<int>::iterator it = survivors.begin(); it != survivors.end(); it++) {
+            cout << *it << " ";
         }
-        p++;
-        p %= N;
-        roul %= K;
-    }
-    for (p = 0; p < N; p++) {
-        if (r[p] == 0) {
-            cout << p+1 << " ";
+        cout << "\n";
+        #endif
+        kill = survivors.erase(kill);
+        if (kill == survivors.end()) kill = survivors.begin();
+        --n;
+        for (i = 0; i < k-1; i++) {
+            ++kill;
+            if (kill == survivors.end()) kill = survivors.begin();            
         }
     }
-    cout << "\n";
+    cout << survivors.front() << " " << survivors.back() << "\n";
 }
 
 int main (void) {
-    int T, tc;
+    cin.tie(0); cout.tie(0); ios_base::sync_with_stdio(0);
+    int T, tc, N, K;
     cin >> T;
     for (tc = 1; tc <= T; tc++) {
         cin >> N >> K;
-        memset(r, 0, sizeof(int)*N);
-        josephus();
+        josephus(N, K);
     }
     return 0;
 }
