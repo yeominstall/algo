@@ -10,6 +10,8 @@ using namespace std;
 
 int R, C, M;
 int dir[5][2] = {0, 0, -1, 0, 1, 0, 0, 1, 0, -1};
+int arr[200];
+int dd[200];
 
 class coord {
 public:
@@ -57,48 +59,22 @@ public:
         else if (d == 4) d = 3;
     }
 
-    int newPos (int curr, int next, int width) {
-        int rem;
-        if (curr == next) return curr;
-        if (next < 0 || next >= width) {
-            
-        }
-        if (width == 2) {
-            if (next < 0 || next >= width) {
-                next = abs(next);
-                if (next % 2 == 1) return 1;
-                else return 0;
-            } else {
-                return next;
-            }
-        }
-        if (next < 0) {
-            next = -next;
-            rem = (next - 1) % (width - 1);
-            if (((next-1)/(width-1)) % 2 == 0) {
+    int newPos (int curr, int dd, int width) {
+        if (dd == 0) return curr;
+        int rem = v % (2 * (width - 1));
+        for (int i = 0; i < rem; i++) {
+            if ((curr == 0 && dd == -1) || (curr == (width - 1) && dd == 1)) {
+                dd *= -1;
                 turn();
-                return (rem + 1);
-            } else {
-                return (width - 2 - rem);
             }
-        } else if (next >= width) {
-            rem = next % (width - 1);
-            if ((next-1)/(width-1) % 2 == 1) {
-                turn();
-                return (width - 1 - rem);
-            } else {
-                return rem;
-            }
-        } else {
-            return next;
+            curr += dd;
         }
+        return curr;
     }
 
     void moving (void) {
-        int ny = p.y + (dir[d][0] * v);
-        int nx = p.x + (dir[d][1] * v);
-        p.y = newPos(p.y, ny, R);
-        p.x = newPos(p.x, nx, C);
+        p.y = newPos(p.y, dir[d][0], R);
+        p.x = newPos(p.x, dir[d][1], C);
     }
 };
 
