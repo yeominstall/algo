@@ -1,32 +1,53 @@
 /**
  * boj 17143
  */
-
 #include <iostream>
-#include <cstring>
 #include <vector>
-#define __OOB__(x,y)    (x < 0 || x >= C || y < 0 || y >= R)
+#include <algorithm>
+#include <cstring>
 
 using namespace std;
 
-int R, C;
+int R, C, M;
 int dir[5][2] = {0, 0, -1, 0, 1, 0, 0, 1, 0, -1};
+
+class coord {
+public:
+    int x;
+    int y;
+
+    coord (int _x, int _y) : x(_x), y(_y) {}
+
+    bool operator== (const coord &rhs) const {
+        return (x == rhs.x && y == rhs.y);
+    }
+
+    bool operator< (const coord &rhs) const {
+        if (x == rhs.x && y == rhs.y) return true;
+
+        if (x == rhs.x) {
+            return (y < rhs.y);
+        } else {
+            return (x < rhs.x);
+        }
+    }
+};
 
 class shark {
 public:
-    int y;
-    int x;
-    int d;
+    coord p;
     int v;
-    const int size;
+    int d;
+    int size;
 
-    shark (int _r, int _c, int _d, int _v, int _z) 
-    : y(_r), x(_c), d(_d), v(_v), size(_z) 
-    {}
+    shark (coord _p, int _v, int _d, int _z) : p(_p), v(_v), d(_d), size(_z) {}
 
-    shark (int n) : y(0), x(0), d(0), v(0), size(-1)
-    {
-        // This is empty
+    bool operator< (const shark &rhs) const {
+        if (p == rhs.p) {
+            return (size > rhs.size);
+        } else {
+            return (p < rhs.p);
+        }
     }
 
     void turn (void) {
@@ -36,23 +57,35 @@ public:
         else if (d == 4) d = 3;
     }
 
-    int newCoords (int curr, int next, int width) {
+    int newPos (int curr, int next, int width) {
         int rem;
-        if (next < 0) {
-            next = (next + curr) * (-1);
-            rem = next % (width - 1);
-            if (((next-1)/width) % 2 == 1) {
-                turn();
-                return (width - rem);
+        if (curr == next) return curr;
+        if (next < 0 || next >= width) {
+            
+        }
+        if (width == 2) {
+            if (next < 0 || next >= width) {
+                next = abs(next);
+                if (next % 2 == 1) return 1;
+                else return 0;
             } else {
-                return rem;
+                return next;
+            }
+        }
+        if (next < 0) {
+            next = -next;
+            rem = (next - 1) % (width - 1);
+            if (((next-1)/(width-1)) % 2 == 0) {
+                turn();
+                return (rem + 1);
+            } else {
+                return (width - 2 - rem);
             }
         } else if (next >= width) {
-            next -= curr;
             rem = next % (width - 1);
-            if (((next-1)/width) % 2 == 1) {
+            if ((next-1)/(width-1) % 2 == 1) {
                 turn();
-                return (width - rem);
+                return (width - 1 - rem);
             } else {
                 return rem;
             }
@@ -62,35 +95,23 @@ public:
     }
 
     void moving (void) {
-        int ny = y + (dir[d][0] * v);
-        int nx = x + (dir[d][1] * v);
-        y = newCoords(y, ny, R);
-        x = newCoords(x, nx, C);
+        int ny = p.y + (dir[d][0] * v);
+        int nx = p.x + (dir[d][1] * v);
+        p.y = newPos(p.y, ny, R);
+        p.x = newPos(p.x, nx, C);
     }
 };
 
 vector<shark> sharks;
-int sea[100][100];
 
-void remap (void) {
+void printSea (void) {
+    int sea[100][100];
     memset(sea, 0, sizeof(sea));
-    vector<shark>::iterator it;
-    for (it = sharks.begin(); it != sharks.end(); ) {
-        if (sea[(*it).y][(*it).x] > (*it).size) {
-            it = sharks.erase(it);
-        } else {
-            sea[(*it).y][(*it).x] = (*it).size;
-            it++;
-        }
+    for (vector<shark>::iterator it = sharks.begin(); it != sharks.end(); it++) {
+        coord p = (*it).p;
+        sea[p.y][p.x] = (*it).size;
     }
-    for (it = sharks.begin(); it != sharks.end(); ) {
-        if (sea[(*it).y][(*it).x] != (*it).size) {
-            it = sharks.erase(it);
-        } else { it++; }
-    }
-}
-
-void printmap (void) {
+    cout << "===================\n";
     for (int i = 0; i < R; i++) {
         for (int j = 0; j < C; j++) {
             cout << sea[i][j] << " ";
@@ -99,44 +120,55 @@ void printmap (void) {
     }
 }
 
-int fishing (int target) {
-    int s;
-    for (int i = 0; i < R; i++) {
-        if (sea[i][target] != 0) {
-            for (vector<shark>::iterator it = sharks.begin(); it != sharks.end(); it++) {
-                if ((*it).y == i && (*it).x == target) {
-                    s = (*it).size;
-                    it = sharks.erase(it);
-                    return s;
-                }
-            }
+int fishing (int src) {
+    int score = 0;
+    vector<shark>::iterator it;
+    for (it = sharks.begin(); it != sharks.end(); it++) {
+        if ((*it).p.x == src) {
+            score = (*it).size;
+            it = sharks.erase(it);
+            break;
         }
     }
-    return 0;
+    return score;
+}
+
+void setPos (void) {
+    vector<shark>::iterator it;
+    sort(sharks.begin(), sharks.end());
+    coord former = sharks.front().p;
+    for (it = sharks.begin()+1; it != sharks.end(); ) {
+        if ((*it).p == former) {
+            it = sharks.erase(it);
+        } else {
+            former = (*it).p;
+            it++;
+        }
+    }
 }
 
 int main (void) {
-    int M, rr, cc, d, v, z;
-    int score, total = 0;
+    int rr, cc, v, d, z, score, total = 0;
     cin >> R >> C >> M;
     for (int i = 0; i < M; i++) {
-        cin >> rr >> cc >> d >> v >> z;
-        sharks.push_back(shark(rr-1, cc-1, d, v, z));
+        cin >> rr >> cc >> v >> d >> z;
+        sharks.push_back(shark(coord(cc-1, rr-1), v, d, z));
     }
+    sort(sharks.begin(), sharks.end());
     for (int i = 0; i < C; i++) {
 #ifdef PPRINT
-printmap();
+    printSea();
 #endif
-        if (sharks.size() < 1) break;
         score = fishing(i);
+#ifdef PPRINT
+        cout << "score: " << score << "\n";
+#endif
+        total += score;
+        if (sharks.size() < 1) break;
         for (vector<shark>::iterator it = sharks.begin(); it != sharks.end(); it++) {
             (*it).moving();
         }
-#ifdef PPRINT
-cout << "score : " << score << "\n";
-#endif
-        remap();
-        total += score;
+        setPos();
     }
     cout << total << "\n";
     return 0;
