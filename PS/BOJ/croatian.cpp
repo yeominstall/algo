@@ -35,7 +35,7 @@ int main (void) {
             }
         }
     }
-    if (!tmp.empty()) {
+    if (!tmp.empty() && tmp != "*") {
         count++;
     }
     std::cout << count << "\n";
