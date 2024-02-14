@@ -1,26 +1,16 @@
 #include <string>
 #include <vector>
-#include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 
+// 선수의 이름을 key로 사용하는 해시 테이블을 사용하면 상수시간에 접근할 수 있다.
+// key : value = 선수 이름 : 접근 횟수
 string solution(vector<string> participant, vector<string> completion) {
-    string answer = "";
-    sort(participant.begin(), participant.end());
-    sort(completion.begin(), completion.end());
-    auto iter2 = participant.begin();
-    for (auto iter = completion.begin(); iter != completion.end(); iter++)
-    {
-        if (*iter != *iter2)
-        {
-            answer = *iter2;
-            break;
-        }
-        
-        iter2++;
-    }
-    if (answer == "")
-        answer = *iter2;
-    
-    return answer;
+    unordered_map<string, int> h;
+    for (auto &i : participant) h[i]++;
+    for (auto &i : completion) h[i]--;
+    for (auto &i : h)
+        if (i.second > 0)
+            return i.first;
 }
