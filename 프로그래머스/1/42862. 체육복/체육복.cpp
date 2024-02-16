@@ -1,36 +1,40 @@
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <algorithm>
 
 using namespace std;
 
+// 그리디가 최적해가 되는 경우: 부분의 최적해가 결국 전체의 최적해가 될 때
+// 순차 순회가 되어야 한다. 문제를 잘 읽을 것
 int solution(int n, vector<int> lost, vector<int> reserve) {
-    int answer = 0;
-    int std[31];
-    sort(lost.begin(), lost.end());
+    int answer = n - lost.size();
+    unordered_map<int, int> lost_hash;
     sort(reserve.begin(), reserve.end());
-    for (auto& i : std) i = 1;
-    for (auto& i : lost) std[i] = 0;
-    for (int i = 0; i < reserve.size();)
+    for (auto& i : lost) lost_hash[i]++;
+    for (auto iter = reserve.begin(); iter != reserve.end(); )
     {
-        if (std[reserve[i]] == 0)
+        if (lost_hash[*iter] > 0)
         {
-            std[reserve[i]] = 1;
-            reserve.erase(reserve.begin() + i);
+            lost_hash.erase(*iter);
+            reserve.erase(iter);
+            answer++;
         }
-        else i++;
+        else
+            iter++;
     }
     for (auto& i : reserve)
     {
-        if (i - 1 > 0 && std[i - 1] == 0)
-            std[i-1] = 1;
-        else if (i < n && std[i + 1] == 0)
-            std[i+1] = 1;
-    }
-    for (int i = 1; i <= n; i++)
-    {
-        if (std[i] == 1)
+        if (lost_hash[i-1] > 0)
+        {
+            lost_hash.erase(i-1);
             answer++;
+        }
+        else if (lost_hash[i+1] > 0)
+        {
+            lost_hash.erase(i+1);
+            answer++;
+        }
     }
     return answer;
 }
