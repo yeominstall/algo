@@ -1,90 +1,72 @@
-#include<iostream>
-#include <cstdio>
+#include <iostream>
+#include <unordered_map>
+
 using namespace std;
 
-typedef struct Node {
-	int data;
-	struct Node* left;
-	struct Node* right;
-
-}Node;
-
-void insert_Node(Node* node, int x)
+struct node
 {
-	Node* parent;
-	Node* tmp;
-	Node* newNode;
-	parent = NULL;
-	tmp = node;
+	int key;
+	node* left;
+	node* right;
+};
 
-	while (tmp != NULL)
+int input = 0;
+node* root = nullptr;
+
+void postorder(node* n)
+{
+	if (n == 0) return;
+
+	postorder(n->left);
+	postorder(n->right);
+	cout << n->key << '\n';
+}
+
+void preorder_input(int val)
+{
+	node* n = new node{ val, 0, 0 };
+	node* pos = root;
+
+	while (1)
 	{
-		parent = tmp;
-		if (tmp->data > x)
+		if (pos->key > val)
 		{
-			if (tmp->left != NULL)
-				tmp = tmp->left;
-
-			else
+			if (pos->left == nullptr)
+			{
+				pos->left = n;
 				break;
+			}
+			else
+				pos = pos->left;
 		}
-
-
-
 		else
 		{
-			if (tmp->right != NULL)
-				tmp = tmp->right;
-
-			else
+			if (pos->right == 0)
+			{
+				pos->right = n;
 				break;
+			}
+			else
+				pos = pos->right;
 		}
-
-
-	}
-
-	newNode = new Node;
-
-	if (parent->data > x)
-		parent->left = newNode;
-
-	else
-		parent->right = newNode;
-
-	newNode->data = x;
-	newNode->left = NULL;
-	newNode->right = NULL;
-
-}
-void postOrder(Node* node)
-{
-	if (node)
-	{
-		postOrder(node->left);
-
-		postOrder(node->right);
-
-		cout << node->data << ' ';
-
 	}
 }
-int main()
+
+int main(void)
 {
-	int root_data;
-	cin >> root_data;
+	cin.tie(0); cout.tie(0); ios_base::sync_with_stdio(false);
+	cin >> input;
+	node* btree = new node{ input, 0, 0 };
+	root = btree;
 
-	Node* root = new Node;
-	root->data = root_data;
-	root->left = NULL;
-	root->right = NULL;
-
-	int x;
-
-	while (cin >> x)
+	while (cin >> input)
 	{
-
-		if (x != EOF)
-			insert_Node(root, x);
+		if (input == cin.fail())
+			break;
+		preorder_input(input);
 	}
-	postOrder(root);
+	
+	postorder(root);
+
+	return 0;
 }
