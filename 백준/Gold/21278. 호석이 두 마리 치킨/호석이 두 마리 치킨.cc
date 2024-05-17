@@ -35,10 +35,7 @@ int main(void)
                     continue;
                 int alter = kitchen[i][k] + kitchen[k][j];
                 if (alter < kitchen[i][j])
-                {
                     kitchen[i][j] = alter;
-                    kitchen[j][i] = alter;
-                }
             }
         }
     }
@@ -49,9 +46,10 @@ int main(void)
     {
         for (j = i + 1; j <= n; ++j)
         {
+            total = 0;
             for (k = 1; k <= n; ++k)
             {
-                total += min(kitchen[k][i], kitchen[k][j]);
+                total += min(kitchen[k][i], kitchen[k][j]) * 2;
             }
             if (total < shortest)
             {
@@ -61,7 +59,7 @@ int main(void)
             }
         }
     }
-    cout << idx1 << ' ' << idx2 << ' ' << shortest * 2 << '\n';
+    cout << idx1 << ' ' << idx2 << ' ' << shortest << '\n';
 
     return 0;
 }
